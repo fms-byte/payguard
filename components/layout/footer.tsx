@@ -1,4 +1,3 @@
-// components/layout/footer.tsx
 export default function Footer() {
   return (
     <footer className="border-t bg-background">

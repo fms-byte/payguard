@@ -32,7 +32,7 @@ export default function UserDashboard() {
   }, []);
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="container min-h-screen p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-gray-600">Welcome back to your dashboard</p>

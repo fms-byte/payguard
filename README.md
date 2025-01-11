@@ -42,12 +42,14 @@ PayGuard is a secure, robust system for tracking and verifying payments. This ap
 3. Established basic project structure and middleware.
 4. Developed frontend pages using Shadcn components and Tailwind CSS.
 5. Built reusable components for the frontend.
+6. Integrated APIs for Supabase authentication flow.
+7. Data Validation with Zod
+8. Connected the Supabase Database and Created User with Authetication
+
 
 ### **Upcoming Tasks**
-- **Authentication System:** Implement authentication with Supabase.
-- **Data Validation:** Add validation using `zod`.
-- **Database Design:** Finalize and connect the database (Supabase schema).
 - **Payment Management System:** Create APIs for payment processing.
+- **Connect with Payment Tables:** Store Payment information into Payment Tables.
 - **Document Upload Functionality:** Integrate Supabase Storage for file uploads.
 - **Dashboards:** Build detailed user and admin dashboards.
 - **Deployment:** Deploy the application to production.
@@ -96,6 +98,25 @@ payguard/
 | `role`     | VARCHAR   | User role: `admin` or `user`          |
 | `created_at` | TIMESTAMP | Account creation date               |
 
+### **Sql query**
+```sql
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users NOT NULL PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  role VARCHAR(20) DEFAULT 'user' NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+alter table profiles enable row level security;
+
+create policy "Profiles are viewable, editable, deletable by users who created them."
+on profiles for all
+using ( auth.uid() = id );
+```
+
 ### **Payments Table**
 | Field      | Type      | Description                           |
 |------------|-----------|---------------------------------------|
@@ -105,6 +126,50 @@ payguard/
 | `status`   | VARCHAR   | Status: `pending`, `approved`, `rejected` |
 | `user_id`  | UUID      | Foreign Key (references Users.id)     |
 | `created_at` | TIMESTAMP | Payment creation date               |
+
+### **Sql query**
+```sql
+CREATE TABLE payments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  amount NUMERIC(10,2) NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+alter table payments enable row level security;
+
+create policy "Users can view their own payments"
+on payments for select
+using ( auth.uid() = user_id );
+
+create policy "Users can create their own payments"
+on payments for insert
+with check ( auth.uid() = user_id );
+
+create policy "Users can update their own pending payments"
+on payments for update
+using ( auth.uid() = user_id AND status = 'pending' );
+
+create policy "Admins can view all payments"
+on payments for select
+using (
+  auth.uid() IN (
+    SELECT id FROM profiles WHERE role = 'admin'
+  )
+);
+
+create policy "Admins can update any payment status"
+on payments for update
+using (
+  auth.uid() IN (
+    SELECT id FROM profiles WHERE role = 'admin'
+  )
+);
+
+```
 
 ### **Documents Table**
 | Field      | Type      | Description                           |
