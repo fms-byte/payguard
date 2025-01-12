@@ -1,7 +1,12 @@
 // app/page.tsx
-import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Shield, CreditCard } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Shield,
+  CreditCard,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -16,17 +21,20 @@ export default function Home() {
               <span className="text-primary"> Made Simple</span>
             </h1>
             <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
-              Track, verify, and manage payments with enterprise-grade security. Perfect for businesses of all sizes.
+              Track, verify, and manage payments with enterprise-grade security.
+              Perfect for businesses of all sizes.
             </p>
             <div className="flex justify-center gap-4">
-              <Button asChild size="lg">
+              <Button asChild size="lg" variant={"outline"}>
                 <Link href="/auth/signup">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg">
-                Learn More
+              <Button asChild size="lg">
+                <Link href="/auth/login">
+                  Login
+                </Link>
               </Button>
             </div>
           </div>
@@ -45,14 +53,16 @@ export default function Home() {
               <Shield className="h-12 w-12 text-primary" />
               <h3 className="text-xl font-bold">Secure Transactions</h3>
               <p className="text-muted-foreground">
-                Enterprise-grade security with advanced encryption and fraud protection.
+                Enterprise-grade security with advanced encryption and fraud
+                protection.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-4 rounded-lg border bg-background/80 backdrop-blur-sm p-6 text-center">
               <CreditCard className="h-12 w-12 text-primary" />
               <h3 className="text-xl font-bold">Easy Payment Tracking</h3>
               <p className="text-muted-foreground">
-                Real-time payment tracking and status updates at your fingertips.
+                Real-time payment tracking and status updates at your
+                fingertips.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-4 rounded-lg border bg-background/80 backdrop-blur-sm p-6 text-center">
@@ -86,5 +96,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-  )
+  );
 }

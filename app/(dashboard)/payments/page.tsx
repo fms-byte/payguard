@@ -1,23 +1,59 @@
 "use client";
 
-import { PaymentCard } from "@/components/dashboard/payment-card";
 import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button"
-import PaymentList from "@/components/dashboard/payment-list"
-import Link from "next/link"
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import PaymentForm from "@/components/dashboard/payment-form";
+import PaymentList from "@/components/dashboard/payment-list";
+import CheckoutForm from "@/components/dashboard/checkout";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Payment } from "@/lib/schema/payment";
+import convertToSubcurrency from "@/lib/utils/convertToSubcurrency";
 
-export default function PaymentListPage() {
-  const [payments, setPayments] = useState([]);
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined");
+}
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+);
+
+export default function PaymentsPage() {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // async function fetchPayments() {
-    //   const { data, error } = await supabaseClient.from("payments").select("*");
-    //   if (!error) setPayments(data);
-    // }
-
-    // fetchPayments();
+    fetchPayments();
   }, []);
+
+  const fetchPayments = async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("payments")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) setPayments(data);
+  };
+
+  const handlePaymentCreated = (payment: Payment) => {
+    setSelectedPayment(payment);
+  };
+
+  const handlePaymentSuccess = async () => {
+    setOpen(false);
+    await fetchPayments();
+  };
 
   return (
     <div className="container min-h-screen p-8 space-y-8">
@@ -26,11 +62,42 @@ export default function PaymentListPage() {
           <h1 className="text-3xl font-bold">Payments</h1>
           <p className="text-gray-600">Manage your payments</p>
         </div>
-        <Link href="/payments/create">
-          <Button>New Payment</Button>
-        </Link>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button>New Payment</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Create Payment</DialogTitle>
+              <DialogDescription>Set up a new payment</DialogDescription>
+            </DialogHeader>
+
+            {!selectedPayment ? (
+              <PaymentForm onPaymentCreated={handlePaymentCreated} />
+            ) : (
+              <div className="flex justify-center items-start bg-gray-100 p-2 rounded-2xl">
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    mode: "payment",
+                    currency: "usd",
+                    amount: convertToSubcurrency(selectedPayment.amount),
+                  }}
+                >
+                  <CheckoutForm
+                    amount={selectedPayment.amount}
+                    paymentId={selectedPayment.id}
+                    onSuccess={handlePaymentSuccess}
+                  />
+                </Elements>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-      <PaymentList />
+
+      <PaymentList payments={payments} onUpdate={fetchPayments} />
     </div>
-  )
+  );
 }

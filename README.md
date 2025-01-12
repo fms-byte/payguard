@@ -45,11 +45,13 @@ PayGuard is a secure, robust system for tracking and verifying payments. This ap
 6. Integrated APIs for Supabase authentication flow.
 7. Data Validation with Zod
 8. Connected the Supabase Database and Created User with Authetication
+9. Created APIs for payment processing.
+10. Store Payment information into Payment Tables.
 
 
 ### **Upcoming Tasks**
-- **Payment Management System:** Create APIs for payment processing.
-- **Connect with Payment Tables:** Store Payment information into Payment Tables.
+- **Payment Bug Fix:** Initiating 3 entries in stripe transection, and the 1st transection id is being inserted into supabase, but the 3rd one is becoming successfull transaction.
+- **Admin Panel:** Add functionality of Admin panel.
 - **Document Upload Functionality:** Integrate Supabase Storage for file uploads.
 - **Dashboards:** Build detailed user and admin dashboards.
 - **Deployment:** Deploy the application to production.
@@ -126,6 +128,7 @@ using ( auth.uid() = id );
 | `status`   | VARCHAR   | Status: `pending`, `approved`, `rejected` |
 | `user_id`  | UUID      | Foreign Key (references Users.id)     |
 | `created_at` | TIMESTAMP | Payment creation date               |
+| `stripe_payment_intent_id` | VARCHAR | Payment intent id               |
 
 ### **Sql query**
 ```sql
@@ -136,7 +139,8 @@ CREATE TABLE payments (
   status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   user_id UUID REFERENCES auth.users NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  stripe_payment_intent_id TEXT;
 );
 
 alter table payments enable row level security;
@@ -189,15 +193,17 @@ using (
 - **POST** `/api/auth/login`: Login users.
 
 ### **2. Payment Management**
-- **POST** `/api/payments`: Create a payment request.
+- **POST** `/api/create-payment`: Create a payment request.
   - Validate input (title, amount).
   - Assign the logged-in user as `user_id`.
   - Default status: `pending`.
-- **GET** `/api/payments`: Retrieve payment records.
+- **GET** `/api/payment`: Retrieve payment records.
   - Users: View their payments.
   - Admins: View all payments.
-- **PUT** `/api/payments/:id`: Update payment status (admin only).
+- **PUT** `/api/payment/:id`: Update payment status (admin only).
   - Approve or reject payments.
+- **DELETE** `/api/cancel-payment`: Cancel a payment request.
+  - Cancel the payment request according to the `user_id`.
 
 ### **3. Document Upload**
 - **POST** `/api/documents`: Upload a document.

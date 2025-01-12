@@ -1,48 +1,50 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import LoadingSpinner from "@/components/shared/loading-spinner";
+import { User } from "@/lib/schema/users";
+import { useToast } from "@/hooks/use-toast"
+
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<{
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    created_at?: string;
-  } | null>(null);
+  const [profile, setProfile] = useState<Omit<User, "password"> | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    async function loadProfile() {
-      const supabase = createClient();
-      
-      const { data: { user } } = await supabase.auth.getUser();
-
-      console.log(user)
-      
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        setProfile({
-          email: user.email,
-          firstName: profile?.first_name,
-          lastName: profile?.last_name,
-          created_at: new Date(user.created_at).toLocaleDateString()
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
-      }
-      
-      setLoading(false);
-    }
 
-    loadProfile();
-  }, []);
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+
+        console.log(data)
+        setProfile(data);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to load profile. Please try again later.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [toast]);
 
   if (loading) {
     return (
@@ -55,7 +57,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Please sign in to view your profile</p>
+        <p className="text-muted-foreground">Please sign in to view your profile</p>
       </div>
     );
   }
@@ -69,22 +71,28 @@ export default function ProfilePage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Email</Label>
-            <p className="text-gray-600">{profile.email}</p>
+            <p className="text-muted-foreground">{profile.email}</p>
           </div>
           
           <div className="space-y-2">
             <Label>First Name</Label>
-            <p className="text-gray-600">{profile.firstName || "Not provided"}</p>
+            <p className="text-muted-foreground">
+              {profile.firstName || "Not provided"}
+            </p>
           </div>
           
           <div className="space-y-2">
             <Label>Last Name</Label>
-            <p className="text-gray-600">{profile.lastName || "Not provided"}</p>
+            <p className="text-muted-foreground">
+              {profile.lastName || "Not provided"}
+            </p>
           </div>
           
           <div className="space-y-2">
-            <Label>Member Since</Label>
-            <p className="text-gray-600">{profile.created_at}</p>
+            <Label>Role</Label>
+            <p className="text-muted-foreground capitalize">
+              {profile.role}
+            </p>
           </div>
         </CardContent>
       </Card>

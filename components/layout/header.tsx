@@ -53,63 +53,65 @@ export default function Header() {
             <span className="text-2xl font-bold text-primary">PayGuard</span>
           </Link>
 
-          {isLoggedIn && (
-            <div className="hidden md:flex md:items-center md:gap-6">
-              <nav className="flex items-center gap-6">
-                <Link
-                  href="/dashboard"
-                  className={`text-md font-medium transition-colors hover:text-primary ${
-                    pathname?.startsWith("/dashboard")
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/payments"
-                  className={`text-md font-medium transition-colors hover:text-primary ${
-                    pathname?.startsWith("/payments")
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  Payments
-                </Link>
-              </nav>
-            </div>
-          )}
+          <div className="hidden md:flex md:items-center md:gap-6">
+            <nav className="flex items-center gap-6">
+              <Link
+                href="/dashboard"
+                className={`text-md font-medium transition-colors hover:text-primary ${
+                  pathname?.startsWith("/dashboard")
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/payments"
+                className={`text-md font-medium transition-colors hover:text-primary ${
+                  pathname?.startsWith("/payments")
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Payments
+              </Link>
+            </nav>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-6 w-6" />
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-              3
-            </span>
-          </Button>
+        {isLoggedIn && (
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-6 w-6" />
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                3
+              </span>
+            </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <UserIcon className="h-6 w-6" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={goToProfile}>Profile</DropdownMenuItem>
-              {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
-              <DropdownMenuItem onClick={handleSignOut}>
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <UserIcon className="h-6 w-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={goToProfile}>
+                  Profile
+                </DropdownMenuItem>
+                {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
+                <DropdownMenuItem onClick={handleSignOut}>
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </div>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   );

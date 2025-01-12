@@ -20,10 +20,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
+  const { toast } = useToast();
   const {
     register,
     handleSubmit,
@@ -35,23 +37,28 @@ export const LoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
+      const response = await fetch("/api/auth", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          action: 'login',
-          data: data
+          action: "login",
+          data: data,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: "Please check your credentials and try again.",
+        });
+        throw new Error("Login failed");
       }
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error("Error during login:", error);
     } finally {
       setLoading(false);
     }
@@ -115,6 +122,7 @@ export const LoginForm = () => {
 export const SignupForm = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const {
     register,
     handleSubmit,
@@ -126,23 +134,28 @@ export const SignupForm = () => {
   const onSubmit = async (data: SignupFormData) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
+      const response = await fetch("/api/auth", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          action: 'signup',
-          data: data
+          action: "signup",
+          data: data,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Signup failed');
+        toast({
+          variant: "destructive",
+          title: "Signup failed",
+          description: "Please check your information and try again.",
+        });
+        throw new Error("Signup failed");
       }
-      router.push("/auth/email-confirmation")
+      router.push("/auth/email-confirmation");
     } catch (error) {
-      console.error('Error during signup:', error);
+      console.error("Error during signup:", error);
     } finally {
       setLoading(false);
     }
