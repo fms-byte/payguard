@@ -45,7 +45,7 @@ const CheckoutPage = ({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/payments/success?amount=${amount}`,
+        return_url: `${window.location.origin}/payments`,
       },
       redirect: "if_required",
     });

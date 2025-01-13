@@ -1,9 +1,10 @@
+"use client"
 import PaymentTable from "@/components/admin/payment-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import PaymentList from "@/components/dashboard/payment-list";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Payment } from "@/lib/schema/payment";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,7 +12,7 @@ export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const supabase = createClient();
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     const { data, error } = await supabase
       .from("payments")
       .select("*")
@@ -20,11 +21,11 @@ export default function AdminPaymentsPage() {
     if (!error && data) {
       setPayments(data);
     }
-  };
+  }, [supabase]);
 
   useEffect(() => {
     fetchPayments();
-  }, []);
+  }, [fetchPayments]); 
 
   return (
     <div className="container min-h-screen p-8 space-y-8">
