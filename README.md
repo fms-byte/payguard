@@ -47,10 +47,10 @@ PayGuard is a secure, robust system for tracking and verifying payments. This ap
 8. Connected the Supabase Database and Created User with Authetication
 9. Created APIs for payment processing.
 10. Store Payment information into Payment Tables.
+11. Stripe Payment integrated succesfully with a flow.
 
 
 ### **Upcoming Tasks**
-- **Payment Bug Fix:** Initiating 3 entries in stripe transection, and the 1st transection id is being inserted into supabase, but the 3rd one is becoming successfull transaction.
 - **Admin Panel:** Add functionality of Admin panel.
 - **Document Upload Functionality:** Integrate Supabase Storage for file uploads.
 - **Dashboards:** Build detailed user and admin dashboards.

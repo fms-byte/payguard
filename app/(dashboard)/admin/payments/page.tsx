@@ -3,8 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import PaymentList from "@/components/dashboard/payment-list";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Payment } from "@/lib/schema/payment";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AdminPaymentsPage() {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const supabase = createClient();
+
+  const fetchPayments = async () => {
+    const { data, error } = await supabase
+      .from("payments")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setPayments(data);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
   return (
     <div className="container min-h-screen p-8 space-y-8">
       <div className="flex justify-between items-center">
@@ -31,7 +52,7 @@ export default function AdminPaymentsPage() {
           <CardTitle>All Payments</CardTitle>
         </CardHeader>
         <CardContent>
-          <PaymentList isAdmin={true} />
+          <PaymentList payments={payments} onUpdate={fetchPayments} isAdmin={true} />
         </CardContent>
       </Card>
     </div>

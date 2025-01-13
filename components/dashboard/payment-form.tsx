@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createPaymentSchema } from "@/lib/schema/payment";
+import { createPaymentSchema, Payment } from "@/lib/schema/payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ type FormData = {
 export default function PaymentForm({
   onPaymentCreated,
 }: {
-  onPaymentCreated: (payment: any) => void;
+  onPaymentCreated: (payment: Payment) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const {
@@ -84,10 +84,10 @@ export default function PaymentForm({
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     const supabase = createClient();
-  
+
     try {
-      // Insert payment record in Supabase first to get its ID
-      const { data: payment, error } = await supabase
+      // Insert payment record in Supabase first
+      const { data: payment, error: supabaseError } = await supabase
         .from("payments")
         .insert({
           title: data.title,
@@ -97,43 +97,48 @@ export default function PaymentForm({
         })
         .select()
         .single();
-  
-      if (error) {
+
+      if (supabaseError) {
         throw new Error("Failed to create payment record");
       }
-  
-      // Send the unique Supabase payment ID to the Stripe create-payment endpoint
+
+      // Create Stripe payment intent only once
       const response = await fetch("/api/create-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: convertToSubcurrency(data.amount),
           title: data.title,
-          paymentId: payment.id, // Pass unique ID from Supabase
+          paymentId: payment.id,
+          origin: "Call from Payment Form",
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to create payment intent");
       }
-  
+
       const { clientSecret, paymentIntentId } = await response.json();
-  
+
       // Update the payment record with the Stripe intent ID
-      await supabase
+      const { data: updatedPayment, error: updateError } = await supabase
         .from("payments")
         .update({ stripe_payment_intent_id: paymentIntentId })
-        .eq("id", payment.id);
-  
+        .eq("id", payment.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw new Error("Failed to update payment record");
+      }
       reset();
-      onPaymentCreated({ ...payment, clientSecret });
+      onPaymentCreated({ ...updatedPayment, clientSecret });
     } catch (error) {
       console.error("Error creating payment:", error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

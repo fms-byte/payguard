@@ -1,18 +1,43 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
+import Link from "next/link";
+
 export default function PaymentSuccess({
-    searchParams: { amount },
-  }: {
-    searchParams: { amount: string };
-  }) {
-    return (
-      <main className="max-w-6xl mx-auto p-10 text-white text-center border m-10 rounded-md bg-gradient-to-tr from-blue-500 to-purple-500">
-        <div className="mb-10">
-          <h1 className="text-4xl font-extrabold mb-2">Thank you!</h1>
-          <h2 className="text-2xl">You successfully sent</h2>
-  
-          <div className="bg-white p-2 rounded-md text-purple-500 mt-5 text-4xl font-bold">
-            ${amount}
+  searchParams: { amount },
+}: {
+  searchParams: { amount: string };
+}) {
+  return (
+    <div className="container max-w-md min-h-screen flex flex-col items-center justify-center p-8">
+      <Card className="w-full">
+        <CardContent className="pt-6 text-center">
+          <div className="mb-6">
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-semibold tracking-tight mb-2">
+              Payment Successful!
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Your payment has been processed successfully
+            </p>
           </div>
-        </div>
-      </main>
-    );
-  }
+
+          <div className="bg-muted p-6 rounded-lg mb-6">
+            <div className="text-sm text-muted-foreground mb-1">Amount paid</div>
+            <div className="text-3xl font-bold">
+              ${parseFloat(amount).toFixed(2)}
+            </div>
+          </div>
+
+          <Link href="/payments" className="block">
+            <Button className="w-full" size="lg">
+              Return to Payments
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -17,7 +17,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Payment } from "@/lib/schema/payment";
-import convertToSubcurrency from "@/lib/utils/convertToSubcurrency";
 
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
   throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined");
@@ -52,7 +51,15 @@ export default function PaymentsPage() {
 
   const handlePaymentSuccess = async () => {
     setOpen(false);
+    setSelectedPayment(null);
     await fetchPayments();
+  };
+
+  const handleDialogClose = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setSelectedPayment(null);
+    }
   };
 
   return (
@@ -63,7 +70,7 @@ export default function PaymentsPage() {
           <p className="text-gray-600">Manage your payments</p>
         </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button>New Payment</Button>
           </DialogTrigger>
@@ -75,22 +82,28 @@ export default function PaymentsPage() {
 
             {!selectedPayment ? (
               <PaymentForm onPaymentCreated={handlePaymentCreated} />
-            ) : (
+            ) : selectedPayment.clientSecret ? (
               <div className="flex justify-center items-start bg-gray-100 p-2 rounded-2xl">
                 <Elements
                   stripe={stripePromise}
                   options={{
-                    mode: "payment",
-                    currency: "usd",
-                    amount: convertToSubcurrency(selectedPayment.amount),
+                    clientSecret: selectedPayment.clientSecret,
+                    appearance: {
+                      theme: "stripe",
+                    },
                   }}
                 >
                   <CheckoutForm
                     amount={selectedPayment.amount}
                     paymentId={selectedPayment.id}
+                    clientSecret={selectedPayment.clientSecret}
                     onSuccess={handlePaymentSuccess}
                   />
                 </Elements>
+              </div>
+            ) : (
+              <div className="text-center p-4 text-red-500">
+                Error initializing payment. Please try again.
               </div>
             )}
           </DialogContent>
